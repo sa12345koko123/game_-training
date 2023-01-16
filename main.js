@@ -35,36 +35,69 @@ chImg.src = 'sprite.png';
 let oji_x = 100<<4;
 let oji_y = 100<<4;
 let oji_vx = 0;
+let oji_vy = 0;
 let oji_anime = 0;
 let oji_sprite = 0;
 let oji_acount = 0;
 let oji_dir = 0;
+let oji_jump = 0;
+
+const ANIME_JUMP = 4;
+const GRAVITY = 4;
 
 // 更新処理
 function update() {
 
+	oji_acount++;
+	if(Math.abs(oji_vx)==32)oji_acount++;
+
+	if(keyb.ABUTTON){
+		if(oji_jump==0){
+			oji_anime = ANIME_JUMP;
+			oji_jump = 1;
+		}
+		if(oji_jump<15)oji_vy = -(64-oji_jump);
+	}
+	if(oji_jump)oji_jump++;
+
+	//重力
+	if (oji_vy<64)oji_vy+=GRAVITY;
+
+	//床にぶつかる
+	if(oji_y > 150<<4){
+		if(oji_anime==ANIME_JUMP)oji_anime=1;
+		oji_jump = 0;
+		oji_vy = 0;
+		oji_y = 150<<4;
+	}
+
+
 	//横移動の処理
 	if(keyb.Left){
 		if(oji_anime==0)oji_acount=0;
-		oji_anime = 1;
-		oji_dir = 1;
+		if(!oji_jump)oji_anime = 1;
+		if(!oji_jump)oji_dir = 1;
+		oji_sprite += 48;
 		if(oji_vx > -32)oji_vx-=1;
 		//右に進んでいるとき（vxが正の値）に左キーを押したときの動き。少し早めに右へ進んでいるときに左を押すと、キュキュっとなる。
 		if(oji_vx > 0)oji_vx-=1;
-		if(oji_vx > 8)oji_anime = 2;
+		if(!oji_jump&&oji_vx > 8)oji_anime = 2;
 	}
 	else if(keyb.Right) {
 		if(oji_anime==0)oji_acount=0;
-		oji_anime = 1;
+		if(!oji_jump)oji_anime = 1;
 		oji_dir = 0;
 		if(oji_vx < 32)oji_vx+=1;
 		if(oji_vx < 0)oji_vx+=1;
-		if(oji_vx < -8)oji_anime = 2;
+		if(!oji_jump&&oji_vx < -8)oji_anime = 2;
 	}
 	else {
-		if(oji_vx>0)oji_vx-=1;
-		if(oji_vx<0)oji_vx+=1;
-		if(!oji_vx) oji_anime =0;
+		if(!oji_jump) {
+			if(oji_vx>0)oji_vx-=1;
+			if(oji_vx<0)oji_vx+=1;
+			if(!oji_vx) oji_anime =0;
+		}
+		
 	}
 	//毎フレームごとに加算される。歩いているときの処理に利用。
 	oji_acount++;
@@ -77,17 +110,20 @@ function update() {
 	else if (oji_anime == 1) oji_sprite = 2 + ((oji_acount/6)%3);
 	//走っていて急に方向転換するとき
 	else if (oji_anime == 2) oji_sprite = 5;
+	else if (oji_anime == ANIME_JUMP) oji_sprite = 6;
 
 	//左キーボードを押している時は左向きの画像を使用
 	if(oji_dir)oji_sprite += 48;
 
 	//実際におじさんの位置（座標）を変える
 	oji_x += oji_vx;
+	oji_y += oji_vy;
+
 }
 
 //スプライトの描画
 function drawSprite(snum,x,y) {
-	let sx = (snum%16)*16;
+	let sx = (snum&15)*16;
 	let sy = (snum>>4)*16;
 	vcon.drawImage(chImg,sx,sy,16,32, x,y,16,32);
 }
@@ -141,9 +177,13 @@ let keyb = {};
 document.onkeydown = function(e) {
 	if(e.keyCode == 37)keyb.Left = true;
 	if(e.keyCode == 39)keyb.Right = true;
+	if(e.keyCode == 90)keyb.BBUTTON = true;
+	if(e.keyCode == 88)keyb.ABUTTON = true;
 }
 //キーボードが離されたときの処理
 document.onkeyup = function(e) {
 	if(e.keyCode == 37)keyb.Left = false;
 	if(e.keyCode == 39)keyb.Right = false;
+	if(e.keyCode == 90)keyb.BBUTTON = false;
+	if(e.keyCode == 88)keyb.ABUTTON = false;
 }
