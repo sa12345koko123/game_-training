@@ -124,7 +124,10 @@ class Ojisan{
 	}
 	//毎フレームごとの描画処理
 	draw(){
-		drawSprite( this.snum, this.x>>4, this.y>>4);
+		//スクロールしてもおじさんが一緒についてこないように、field.scxを差し引く。
+		let px = (this.x>>4) - field.scx;
+		let py = (this.y>>4) - field.scy;
+		drawSprite( this.snum, px, py);
 	}
 
 }

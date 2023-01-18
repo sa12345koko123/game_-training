@@ -102,6 +102,9 @@ document.onkeydown = function(e) {
 	if(e.keyCode == 39)keyb.Right = true;
 	if(e.keyCode == 90)keyb.BBUTTON = true;
 	if(e.keyCode == 88)keyb.ABUTTON = true;
+	
+	if(e.keyCode == 65)field.scx--;
+	if(e.keyCode == 83)felid.scx++;
 }
 //キーボードが離されたときの処理
 document.onkeyup = function(e) {
